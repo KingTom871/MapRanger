@@ -15,6 +15,7 @@ cl ^
 /Iincludes ^
 main.cpp ^
 runtime/Runtime.cpp ^
+utils/Math.cpp ^
 /Fobuild\obj\ ^
 /Febuild\MapRanger.exe ^
 user32.lib ^
