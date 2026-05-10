@@ -19,21 +19,17 @@ std::vector<Point> Math::detectMarkers(
     const BGRAImage& image,
     const std::vector<ColorRGB>& colors,
     int tolerance
-)
-{
+) {
     std::vector<Point> results;
 
-    for (const ColorRGB& color : colors)
-    {
+    for (const ColorRGB& color : colors) {
         long long sumX = 0;
         long long sumY = 0;
 
         int count = 0;
 
-        for (int y = 0; y < image.height; ++y)
-        {
-            for (int x = 0; x < image.width; ++x)
-            {
+        for (int y = 0; y < image.height; ++y) {
+            for (int x = 0; x < image.width; ++x) {
                 const int index =
                     (y * image.width + x) * 4;
 
@@ -50,8 +46,7 @@ std::vector<Point> Math::detectMarkers(
                     std::abs(r - color.r) <= tolerance &&
                     std::abs(g - color.g) <= tolerance &&
                     std::abs(b - color.b) <= tolerance
-                )
-                {
+                ){
                     sumX += x;
                     sumY += y;
 
@@ -60,18 +55,13 @@ std::vector<Point> Math::detectMarkers(
             }
         }
 
-        Point center;
-
-        if (count > 0)
-        {
-            center.x =
-                static_cast<int>(sumX / count);
-
-            center.y =
-                static_cast<int>(sumY / count);
+        
+        if (count > 0) {
+            Point center;
+            center.x = sumX / count;
+            center.y = sumY / count;
+            results.push_back(center);
         }
-
-        results.push_back(center);
     }
 
     return results;
