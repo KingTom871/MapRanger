@@ -11,7 +11,8 @@ if not exist "build\obj" (
 set sourceFiles=main.cpp ^
 runtime\runtime.cpp ^
 utils\Math.cpp ^
-utils\Capture.cpp
+utils\Capture.cpp ^
+utils\Input.cpp
 
 cl /std:c++20 /EHsc /I. /Iincludes %sourceFiles% ^
 /Fobuild\obj\ ^
