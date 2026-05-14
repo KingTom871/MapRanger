@@ -2,6 +2,11 @@
 
 #include "mINI/ini.h"
 
+#include <Windows.h>
+
+#include <algorithm>
+#include <array>
+#include <cctype>
 #include <iostream>
 #include <unordered_map>
 #include <string>
@@ -18,6 +23,53 @@ static const std::unordered_map<std::string, ResolutionProfiles> g_resolutionPro
     {"2560x1440", {{1905, 780, 2515, 1400}, 87.5}},
 };
 
+// Predefined color profiles for different types of color blindness
+static const std::unordered_map<std::string, std::array<ColorRGB, 4>> g_colorProfiles = {
+    {"none", {
+        ColorRGB{233, 229, 17},
+        ColorRGB{218, 98, 38},
+        ColorRGB{58, 160, 217},
+        ColorRGB{68, 181, 73}
+    }},
+    {"default", {
+        ColorRGB{233, 229, 17},
+        ColorRGB{218, 98, 38},
+        ColorRGB{58, 160, 217},
+        ColorRGB{68, 181, 73}
+    }},
+    {"deuteranopia", {
+        ColorRGB{240, 228, 66},
+        ColorRGB{213, 94, 0},
+        ColorRGB{86, 180, 233},
+        ColorRGB{0, 158, 115}
+    }},
+    {"protanopia", {
+        ColorRGB{230, 159, 0},
+        ColorRGB{204, 121, 167},
+        ColorRGB{86, 180, 233},
+        ColorRGB{0, 114, 178}
+    }},
+    {"tritanopia", {
+        ColorRGB{213, 94, 0},
+        ColorRGB{204, 121, 167},
+        ColorRGB{0, 158, 115},
+        ColorRGB{0, 114, 178}
+    }},
+};
+
+static std::string toLower(std::string value) {
+    std::transform(value.begin(), value.end(), value.begin(), [](unsigned char ch) {
+        return static_cast<char>(std::tolower(ch));
+    });
+    return value;
+}
+
+static std::string detectCurrentResolution() {
+    const int width = GetSystemMetrics(SM_CXSCREEN);
+    const int height = GetSystemMetrics(SM_CYSCREEN);
+    return std::to_string(width) + "x" + std::to_string(height);
+}
+
 bool Runtime::initialize() {
     std::cout << "[Runtime] Loading config...\n";
 
@@ -29,28 +81,40 @@ bool Runtime::initialize() {
         return false;
     }
     
-    // Load configuration values
-    config.resolution = ini["CONFIG"]["resolution"];
+    config.resolution = detectCurrentResolution();
     config.measureOverlayHotKey = ini["CONFIG"]["measureOverlayHotKey"];
     config.minimapOverlayHotkey = ini["CONFIG"]["minimapOverlayHotkey"];
-    config.colorBlind = ini["CONFIG"]["colorBlind"];
+    config.colorBlind = toLower(ini["CONFIG"]["colorBlind"]);
+    if (config.colorBlind.empty()) {
+        config.colorBlind = "none";
+    }
     config.tolerance = std::stoi(ini["CONFIG"]["tolerance"]);
 
-    // Set minimap region and pixel-to-meter scale based on resolution
+    const auto colorIt = g_colorProfiles.find(config.colorBlind);
+    if (colorIt != g_colorProfiles.end()) {
+        config.markerColors = colorIt->second;
+    } else {
+        std::cerr << "[Runtime] Unknown colorBlind mode, fallback to none\n";
+        config.markerColors = g_colorProfiles.at("none");
+        config.colorBlind = "none";
+    }
+
     auto it = g_resolutionProfiles.find(config.resolution);
 
     if (it != g_resolutionProfiles.end())
     {
+        std::cout << "[Runtime] Current resolution: " << config.resolution << "\n";
         config.minimapRegion = it->second.minimapRegion;
         config.pixelToMeterScale = it->second.pixelToMeterScale;
     }
     else
     {
-        std::cerr << "[Runtime] Unknown resolution, fallback to 1920x1080\n";
+        const std::string detectedResolution = config.resolution;
+        std::cerr << "[Runtime] Unsupported resolution " << detectedResolution
+                  << ", fallback minimap profile to 1920x1080\n";
 
         config.minimapRegion = g_resolutionProfiles.at("1920x1080").minimapRegion;
         config.pixelToMeterScale = g_resolutionProfiles.at("1920x1080").pixelToMeterScale;
-        config.resolution = "1920x1080";
     }
 
     std::cout << "[Runtime] Runtime initialized\n";

@@ -1,5 +1,8 @@
 #pragma once
 
+#include "utils/CommonTypes.h"
+
+#include <array>
 #include <string>
 
 /**
@@ -21,6 +24,12 @@ struct RuntimeConfig {
     std::string minimapOverlayHotkey;
     std::string colorBlind;
     MiniMapRegion minimapRegion;
+    std::array<ColorRGB, 4> markerColors = {
+        ColorRGB{233, 229, 17},
+        ColorRGB{218, 98, 38},
+        ColorRGB{58, 160, 217},
+        ColorRGB{68, 181, 73}
+    };
 
     double pixelToMeterScale = 87.5;
     int tolerance = 10;
@@ -30,7 +39,7 @@ struct RuntimeConfig {
 class Runtime{
     public:
         /**
-         * @brief Initializes the runtime by loading the configuration from config.ini.
+         * @brief Initializes runtime settings from config.ini and the current display.
          */
         bool initialize();
 
