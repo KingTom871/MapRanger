@@ -18,10 +18,10 @@ GraphicsContext::~GraphicsContext() {
     shutdown();
 }
 
-bool GraphicsContext::initialize(const wchar_t* title, int width, int height) {
+bool GraphicsContext::initialize(const wchar_t* title) {
     shutdown();
 
-    if (!createWindow(title, width, height)) {
+    if (!createWindow(title)) {
         std::cerr << "[Graphics] Failed to create Win32 window\n";
         shutdown();
         return false;
@@ -54,7 +54,7 @@ void GraphicsContext::endFrame() {
 
     ImGui::Render();
 
-    const float clearColor[4] = {0.1f, 0.1f, 0.1f, 1.0f};
+    const float clearColor[4] = {0.0f, 0.0f, 0.0f, 1.0f};
     deviceContext->OMSetRenderTargets(1, &mainRenderTargetView, nullptr);
     deviceContext->ClearRenderTargetView(mainRenderTargetView, clearColor);
 
@@ -85,7 +85,7 @@ HWND GraphicsContext::getHwnd() const {
     return hwnd;
 }
 
-bool GraphicsContext::createWindow(const wchar_t* title, int width, int height) {
+bool GraphicsContext::createWindow(const wchar_t* title) {
     hInstance = GetModuleHandleW(nullptr);
 
     WNDCLASSEXW wc{};
@@ -108,18 +108,18 @@ bool GraphicsContext::createWindow(const wchar_t* title, int width, int height) 
         return false;
     }
 
-    RECT rect{0, 0, width, height};
-    AdjustWindowRect(&rect, WS_OVERLAPPEDWINDOW, FALSE);
+    const int screenWidth = GetSystemMetrics(SM_CXSCREEN);
+    const int screenHeight = GetSystemMetrics(SM_CYSCREEN);
 
     hwnd = CreateWindowExW(
-        0,
+        WS_EX_TOPMOST | WS_EX_TOOLWINDOW | WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_NOACTIVATE,
         wc.lpszClassName,
         title,
-        WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT,
-        CW_USEDEFAULT,
-        rect.right - rect.left,
-        rect.bottom - rect.top,
+        WS_POPUP,
+        0,
+        0,
+        screenWidth,
+        screenHeight,
         nullptr,
         nullptr,
         hInstance,
@@ -131,7 +131,21 @@ bool GraphicsContext::createWindow(const wchar_t* title, int width, int height) 
         return false;
     }
 
-    ShowWindow(hwnd, SW_SHOWDEFAULT);
+    if (SetLayeredWindowAttributes(hwnd, RGB(0, 0, 0), 0, LWA_COLORKEY) == FALSE) {
+        std::cerr << "[Graphics] SetLayeredWindowAttributes failed (error " << GetLastError() << ")\n";
+        return false;
+    }
+
+    SetWindowPos(
+        hwnd,
+        HWND_TOPMOST,
+        0,
+        0,
+        screenWidth,
+        screenHeight,
+        SWP_SHOWWINDOW | SWP_NOACTIVATE
+    );
+    ShowWindow(hwnd, SW_SHOWNOACTIVATE);
     UpdateWindow(hwnd);
 
     windowCreated = true;
@@ -250,6 +264,10 @@ void GraphicsContext::shutdownImGui() {
 }
 
 LRESULT CALLBACK GraphicsContext::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
+    if (msg == WM_NCHITTEST) {
+        return HTTRANSPARENT;
+    }
+
     if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam)) {
         return TRUE;
     }

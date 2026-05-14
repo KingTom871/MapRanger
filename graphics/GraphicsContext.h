@@ -34,15 +34,13 @@ public:
     GraphicsContext& operator=(const GraphicsContext&) = delete;
 
     /**
-     * @brief Creates a Win32 window and initializes DirectX11 + Dear ImGui.
+     * @brief Creates a transparent click-through fullscreen overlay window and initializes DirectX11 + Dear ImGui.
      *
      * @param title Window title.
-     * @param width Client width in pixels.
-     * @param height Client height in pixels.
      *
      * @return True on success.
      */
-    bool initialize(const wchar_t* title, int width, int height);
+    bool initialize(const wchar_t* title);
 
     /**
      * @brief Starts a new ImGui frame.
@@ -68,7 +66,7 @@ private:
     static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
     LRESULT handleMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
-    bool createWindow(const wchar_t* title, int width, int height);
+    bool createWindow(const wchar_t* title);
     bool createDeviceD3D();
     void createRenderTarget();
     void cleanupRenderTarget();
@@ -90,4 +88,3 @@ private:
     bool d3dInitialized = false;
     bool windowCreated = false;
 };
-
