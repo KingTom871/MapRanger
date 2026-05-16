@@ -243,7 +243,18 @@ void GraphicsContext::cleanupDeviceD3D() {
 void GraphicsContext::initImGui() {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
+
+    ImGuiIO& io = ImGui::GetIO();
+
+    io.Fonts->AddFontFromFileTTF(
+        "C:\\Windows\\Fonts\\msyh.ttc",
+        20.0f,
+        nullptr,
+        io.Fonts->GetGlyphRangesChineseFull()
+    );
+
     ImGui::StyleColorsDark();
+    ImGui::GetStyle().ScaleAllSizes(1.5f);
 
     ImGui_ImplWin32_Init(hwnd);
     ImGui_ImplDX11_Init(device, deviceContext);
