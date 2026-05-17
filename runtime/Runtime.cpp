@@ -14,13 +14,14 @@
 // Predefined minimap regions and pixel-to-meter scales for supported resolutions
 struct ResolutionProfiles {
     MiniMapRegion minimapRegion;
-    double pixelToMeterScale;
+    double pixelPer100m;
+    Point defaultOrigin;
 };
 
 // Resolution profiles for supported resolutions
 static const std::unordered_map<std::string, ResolutionProfiles> g_resolutionProfiles = {
-    {"1920x1080", {{1427, 590, 1888, 1052}, 65.8}},
-    {"2560x1440", {{1905, 780, 2515, 1400}, 87.5}},
+    {"1920x1080", {{1427, 590, 1888, 1052}, 65.8, {1650, 850}}},
+    {"2560x1440", {{1905, 790, 2515, 1400}, 87.5, {2210, 1095}}},
 };
 
 // Predefined color profiles for different types of color blindness
@@ -105,7 +106,8 @@ bool Runtime::initialize() {
     {
         std::cout << "[Runtime] Current resolution: " << config.resolution << "\n";
         config.minimapRegion = it->second.minimapRegion;
-        config.pixelToMeterScale = it->second.pixelToMeterScale;
+        config.pixelPer100m = it->second.pixelPer100m;
+        config.defaultOrigin = it->second.defaultOrigin;
     }
     else
     {
@@ -114,7 +116,8 @@ bool Runtime::initialize() {
                   << ", fallback minimap profile to 1920x1080\n";
 
         config.minimapRegion = g_resolutionProfiles.at("1920x1080").minimapRegion;
-        config.pixelToMeterScale = g_resolutionProfiles.at("1920x1080").pixelToMeterScale;
+        config.pixelPer100m = g_resolutionProfiles.at("1920x1080").pixelPer100m;
+        config.defaultOrigin = g_resolutionProfiles.at("1920x1080").defaultOrigin;
     }
 
     std::cout << "[Runtime] Runtime initialized\n";

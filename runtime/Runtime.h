@@ -30,8 +30,9 @@ struct RuntimeConfig {
         ColorRGB{58, 160, 217},
         ColorRGB{68, 181, 73}
     };
+    Point defaultOrigin;
 
-    double pixelToMeterScale = 87.5;
+    double pixelPer100m = 87.5;
     int tolerance = 10;
 };
 
