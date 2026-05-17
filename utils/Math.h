@@ -7,6 +7,7 @@
 #include "utils/CommonTypes.h"
 
 #include <cstdint>
+#include <optional>
 #include <vector>
 
 class Math{
@@ -20,10 +21,50 @@ class Math{
          * 
          * @return The distance between the two points in meters.
          */
-        static float calculateDistance(
+        static double calculateDistance(
             const Point& p1,
             const Point& p2,
-            float scale
+            double scale
+        );
+
+        static bool isWhite(
+            uint8_t r,
+            uint8_t g,
+            uint8_t b
+        );
+
+        static bool isTargetColor(
+            uint8_t r,
+            uint8_t g,
+            uint8_t b,
+            const ColorRGB& target,
+            int tolerance
+        );
+
+        /**
+         * @brief Detects the player marker with a small white center dot.
+         *
+         * @param image The input image.
+         *
+         * @return The marker center if found.
+         */
+        static std::optional<Point> detectPlayerMarker(
+            const BGRAImage& image,
+            const ColorRGB& targetColor,
+            int tolerance
+        );
+
+        /**
+         * @brief Detects hollow ping markers without a white center.
+         *
+         * @param image The input image.
+         *
+         * @return A list of detected ping marker positions.
+         */
+        static std::vector<Point> detectPingMarkers(
+            const BGRAImage& image,
+            const ColorRGB& targetColor,
+            int tolerance
         );
 
         /**
