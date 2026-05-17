@@ -16,12 +16,15 @@ struct ResolutionProfiles {
     MiniMapRegion minimapRegion;
     double pixelPer100m;
     Point defaultOrigin;
+    int fullScreenRight;
+    int fullScreenBottom;
 };
 
 // Resolution profiles for supported resolutions
+// Format: "WIDTHxHEIGHT": {minimapRegion, pixelPer100m, MiniMapDefaultOrigin, FullScreenRight, FullScreenBottom}
 static const std::unordered_map<std::string, ResolutionProfiles> g_resolutionProfiles = {
-    {"1920x1080", {{1427, 590, 1888, 1052}, 65.8, {1650, 850}}},
-    {"2560x1440", {{1905, 790, 2515, 1400}, 87.5, {2210, 1095}}},
+    {"1920x1080", {{1427, 590, 1888, 1052}, 65.8, {1650, 850}, 1920, 1080}},
+    {"2560x1440", {{1905, 790, 2515, 1400}, 87.5, {2210, 1095}, 2560, 1440}},
 };
 
 // Predefined color profiles for different types of color blindness
@@ -108,6 +111,8 @@ bool Runtime::initialize() {
         config.minimapRegion = it->second.minimapRegion;
         config.pixelPer100m = it->second.pixelPer100m;
         config.defaultOrigin = it->second.defaultOrigin;
+        config.fullScreenRight = it->second.fullScreenRight;
+        config.fullScreenBottom = it->second.fullScreenBottom;
     }
     else
     {
@@ -118,6 +123,8 @@ bool Runtime::initialize() {
         config.minimapRegion = g_resolutionProfiles.at("1920x1080").minimapRegion;
         config.pixelPer100m = g_resolutionProfiles.at("1920x1080").pixelPer100m;
         config.defaultOrigin = g_resolutionProfiles.at("1920x1080").defaultOrigin;
+        config.fullScreenRight = g_resolutionProfiles.at("1920x1080").fullScreenRight;
+        config.fullScreenBottom = g_resolutionProfiles.at("1920x1080").fullScreenBottom;
     }
 
     std::cout << "[Runtime] Runtime initialized\n";

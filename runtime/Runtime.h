@@ -24,6 +24,8 @@ struct RuntimeConfig {
     std::string minimapOverlayHotkey;
     std::string colorBlind;
     MiniMapRegion minimapRegion;
+    int fullScreenRight = 1920;
+    int fullScreenBottom = 1080;
     std::array<ColorRGB, 4> markerColors = {
         ColorRGB{233, 229, 17},
         ColorRGB{218, 98, 38},
@@ -32,7 +34,7 @@ struct RuntimeConfig {
     };
     Point defaultOrigin;
 
-    double pixelPer100m = 87.5;
+    double pixelPer100m = 65.8;
     int tolerance = 10;
 };
 
