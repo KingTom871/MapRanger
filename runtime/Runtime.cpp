@@ -1,4 +1,5 @@
 #include "runtime/Runtime.h"
+#include "utils/Profiler.h"
 
 #include "mINI/ini.h"
 
@@ -92,6 +93,11 @@ bool Runtime::initialize() {
     if (config.colorBlind.empty()) {
         config.colorBlind = "none";
     }
+
+    const std::string debugValue = toLower(ini["CONFIG"]["debug"]);
+    const bool debugEnabled = (debugValue == "true" || debugValue == "1" || debugValue == "yes" || debugValue == "on");
+    Profiler::instance().setEnabled(debugEnabled);
+
     config.tolerance = std::stoi(ini["CONFIG"]["tolerance"]);
 
     const auto colorIt = g_colorProfiles.find(config.colorBlind);
