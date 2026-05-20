@@ -3,6 +3,7 @@
 #include "ImGui/imgui.h"
 #include "ImGui/backends/imgui_impl_dx11.h"
 #include "ImGui/backends/imgui_impl_win32.h"
+#include "utils/Profiler.h"
 
 #include <d3d11.h>
 #include <dxgi.h>
@@ -52,15 +53,21 @@ void GraphicsContext::endFrame() {
         return;
     }
 
-    ImGui::Render();
+    {
+        ScopedTimer timer("render");
+        ImGui::Render();
 
-    const float clearColor[4] = {0.0f, 0.0f, 0.0f, 1.0f};
-    deviceContext->OMSetRenderTargets(1, &mainRenderTargetView, nullptr);
-    deviceContext->ClearRenderTargetView(mainRenderTargetView, clearColor);
+        const float clearColor[4] = {0.0f, 0.0f, 0.0f, 1.0f};
+        deviceContext->OMSetRenderTargets(1, &mainRenderTargetView, nullptr);
+        deviceContext->ClearRenderTargetView(mainRenderTargetView, clearColor);
 
-    ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+        ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+    }
 
-    swapChain->Present(1, 0);
+    {
+        ScopedTimer timer("present");
+        swapChain->Present(1, 0);
+    }
 }
 
 void GraphicsContext::shutdown() {
@@ -83,6 +90,15 @@ void GraphicsContext::shutdown() {
 
 HWND GraphicsContext::getHwnd() const {
     return hwnd;
+}
+
+void GraphicsContext::setWindowVisible(bool nextVisible) {
+    if (hwnd == nullptr || visible == nextVisible) {
+        return;
+    }
+
+    ShowWindow(hwnd, nextVisible ? SW_SHOWNOACTIVATE : SW_HIDE);
+    visible = nextVisible;
 }
 
 bool GraphicsContext::createWindow(const wchar_t* title) {
@@ -149,6 +165,7 @@ bool GraphicsContext::createWindow(const wchar_t* title) {
     UpdateWindow(hwnd);
 
     windowCreated = true;
+    visible = true;
     return true;
 }
 

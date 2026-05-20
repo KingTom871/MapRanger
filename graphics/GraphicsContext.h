@@ -62,6 +62,11 @@ public:
      */
     HWND getHwnd() const;
 
+    /**
+     * @brief Shows or hides the overlay window without destroying graphics resources.
+     */
+    void setWindowVisible(bool visible);
+
 private:
     static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
     LRESULT handleMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
@@ -87,4 +92,5 @@ private:
     bool imguiInitialized = false;
     bool d3dInitialized = false;
     bool windowCreated = false;
+    bool visible = false;
 };
