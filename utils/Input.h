@@ -64,8 +64,8 @@ private:
 
     const RuntimeConfig& config;
     HWND hwnd = nullptr;
-    bool minimapEnabled = true;
-    bool measureEnabled = true;
+    bool minimapEnabled = false;
+    bool measureEnabled = false;
     bool miniMapHotkeyRegistered = false;
     bool measureHotkeyRegistered = false;
 
