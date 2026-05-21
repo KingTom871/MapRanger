@@ -1,11 +1,8 @@
 #include "ui/MiniMapPanel.h"
-#include "utils/Math.h"
-#include "utils/Capture.h"
 
 #include "ImGui/imgui.h"
 
 #include <cstdio>
-#include <cmath>
 
 namespace UI {
 namespace {
@@ -20,55 +17,17 @@ ImVec2 centeredTextPosition(const ImVec2& min, const ImVec2& max, const char* te
         min.y + (max.y - min.y - textSize.y) * 0.5f
     );
 }
-
-std::array<int, 4> calculateMarkerDistances(const RuntimeConfig& config) {
-    std::array<int, 4> distances = {0, 0, 0, 0};
-    const MiniMapRegion& scanArea = config.minimapRegion;
-
-    BGRAImage image = Capture::captureRegion(
-        scanArea.left,
-        scanArea.top,
-        scanArea.right,
-        scanArea.bottom
-    );
-
-    const Point& origin = config.defaultOrigin;
-    
-    for (int i = 0; i < 4; ++i) {
-        const ColorRGB& color = config.markerColors[i];
-
-        const std::vector<Point> markers = Math::detectPingMarkers(image, color, config.tolerance);
-
-        if (markers.empty()) {
-            distances[i] = 0;
-            continue;
-        }
-
-        Point absoluteMarker;
-        absoluteMarker.x = markers[0].x + scanArea.left;
-        absoluteMarker.y = markers[0].y + scanArea.top;
-
-        distances[i] = static_cast<int>(
-            std::lround(
-                Math::calculateDistance(
-                    origin,
-                    absoluteMarker,
-                    config.pixelPer100m
-                )
-            )
-        );
-    }
-
-    return distances;
-}
 }
 
-void renderMiniMapPanel(bool enabled, const RuntimeConfig& config) {
+void renderMiniMapPanel(
+    bool enabled,
+    const RuntimeConfig& config,
+    const std::array<int, 4>& distances
+) {
     if (!enabled) {
         return;
     }
 
-    const std::array<int, 4> distances = calculateMarkerDistances(config);
     const MiniMapRegion& scanArea = config.minimapRegion;
     const ImGuiViewport* viewport = ImGui::GetMainViewport();
 
