@@ -10,10 +10,14 @@ if not exist "build\obj" (
 
 set sourceFiles=main.cpp ^
 runtime\runtime.cpp ^
+runtime\DetectionService.cpp ^
 utils\Math.cpp ^
 utils\Capture.cpp ^
 utils\Input.cpp ^
 graphics\GraphicsContext.cpp ^
+ui\OverlayManager.cpp ^
+ui\MiniMapPanel.cpp ^
+ui\DragMeasure.cpp ^
 includes\ImGui\imgui.cpp ^
 includes\ImGui\imgui_draw.cpp ^
 includes\ImGui\imgui_tables.cpp ^
