@@ -6,7 +6,7 @@
 
 #include <Windows.h>
 
-#include <cstdint>
+#include <wrl/client.h>
 
 struct ID3D11Device;
 struct ID3D11DeviceContext;
@@ -73,9 +73,7 @@ private:
 
     bool createWindow(const wchar_t* title);
     bool createDeviceD3D();
-    void createRenderTarget();
-    void cleanupRenderTarget();
-    void cleanupDeviceD3D();
+    bool createRenderTarget();
 
     void initImGui();
     void shutdownImGui();
@@ -84,13 +82,12 @@ private:
     HWND hwnd = nullptr;
     ATOM windowClassAtom = 0;
 
-    IDXGISwapChain* swapChain = nullptr;
-    ID3D11Device* device = nullptr;
-    ID3D11DeviceContext* deviceContext = nullptr;
-    ID3D11RenderTargetView* mainRenderTargetView = nullptr;
+    Microsoft::WRL::ComPtr<IDXGISwapChain> swapChain;
+    Microsoft::WRL::ComPtr<ID3D11Device> device;
+    Microsoft::WRL::ComPtr<ID3D11DeviceContext> deviceContext;
+    Microsoft::WRL::ComPtr<ID3D11RenderTargetView> mainRenderTargetView;
 
     bool imguiInitialized = false;
     bool d3dInitialized = false;
-    bool windowCreated = false;
     bool visible = false;
 };

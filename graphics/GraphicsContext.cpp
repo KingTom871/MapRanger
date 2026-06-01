@@ -13,6 +13,13 @@
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
+namespace {
+constexpr const wchar_t* kWindowClassName = L"MapRangerWindowClass";
+constexpr const char* kFontPath = "C:\\Windows\\Fonts\\msyh.ttc";
+constexpr float kFontSize = 20.0f;
+constexpr float kStyleScale = 1.5f;
+}
+
 GraphicsContext::GraphicsContext() = default;
 
 GraphicsContext::~GraphicsContext() {
@@ -58,8 +65,9 @@ void GraphicsContext::endFrame() {
         ImGui::Render();
 
         const float clearColor[4] = {0.0f, 0.0f, 0.0f, 1.0f};
-        deviceContext->OMSetRenderTargets(1, &mainRenderTargetView, nullptr);
-        deviceContext->ClearRenderTargetView(mainRenderTargetView, clearColor);
+        ID3D11RenderTargetView* renderTargetView = mainRenderTargetView.Get();
+        deviceContext->OMSetRenderTargets(1, &renderTargetView, nullptr);
+        deviceContext->ClearRenderTargetView(renderTargetView, clearColor);
 
         ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
     }
@@ -72,7 +80,11 @@ void GraphicsContext::endFrame() {
 
 void GraphicsContext::shutdown() {
     shutdownImGui();
-    cleanupDeviceD3D();
+    mainRenderTargetView.Reset();
+    swapChain.Reset();
+    deviceContext.Reset();
+    device.Reset();
+    d3dInitialized = false;
 
     if (hwnd != nullptr) {
         DestroyWindow(hwnd);
@@ -80,11 +92,11 @@ void GraphicsContext::shutdown() {
     }
 
     if (windowClassAtom != 0) {
-        UnregisterClassW(L"MapRangerWindowClass", hInstance);
+        UnregisterClassW(kWindowClassName, hInstance);
         windowClassAtom = 0;
     }
 
-    windowCreated = false;
+    visible = false;
     hInstance = nullptr;
 }
 
@@ -103,6 +115,10 @@ void GraphicsContext::setWindowVisible(bool nextVisible) {
 
 bool GraphicsContext::createWindow(const wchar_t* title) {
     hInstance = GetModuleHandleW(nullptr);
+    if (hInstance == nullptr) {
+        std::cerr << "[Graphics] GetModuleHandleW failed (error " << GetLastError() << ")\n";
+        return false;
+    }
 
     WNDCLASSEXW wc{};
     wc.cbSize = sizeof(WNDCLASSEXW);
@@ -115,7 +131,7 @@ bool GraphicsContext::createWindow(const wchar_t* title) {
     wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
     wc.hbrBackground = nullptr;
     wc.lpszMenuName = nullptr;
-    wc.lpszClassName = L"MapRangerWindowClass";
+    wc.lpszClassName = kWindowClassName;
     wc.hIconSm = nullptr;
 
     windowClassAtom = RegisterClassExW(&wc);
@@ -149,6 +165,8 @@ bool GraphicsContext::createWindow(const wchar_t* title) {
 
     if (SetLayeredWindowAttributes(hwnd, RGB(0, 0, 0), 0, LWA_COLORKEY) == FALSE) {
         std::cerr << "[Graphics] SetLayeredWindowAttributes failed (error " << GetLastError() << ")\n";
+        DestroyWindow(hwnd);
+        hwnd = nullptr;
         return false;
     }
 
@@ -164,7 +182,6 @@ bool GraphicsContext::createWindow(const wchar_t* title) {
     ShowWindow(hwnd, SW_SHOWNOACTIVATE);
     UpdateWindow(hwnd);
 
-    windowCreated = true;
     visible = true;
     return true;
 }
@@ -205,10 +222,10 @@ bool GraphicsContext::createDeviceD3D() {
         static_cast<UINT>(std::size(featureLevels)),
         D3D11_SDK_VERSION,
         &sd,
-        &swapChain,
-        &device,
+        swapChain.GetAddressOf(),
+        device.GetAddressOf(),
         &featureLevel,
-        &deviceContext
+        deviceContext.GetAddressOf()
     );
 
     if (FAILED(hr)) {
@@ -216,45 +233,30 @@ bool GraphicsContext::createDeviceD3D() {
         return false;
     }
 
-    createRenderTarget();
+    if (!createRenderTarget()) {
+        return false;
+    }
+
     d3dInitialized = true;
     return true;
 }
 
-void GraphicsContext::createRenderTarget() {
+bool GraphicsContext::createRenderTarget() {
     ID3D11Texture2D* backBuffer = nullptr;
     if (FAILED(swapChain->GetBuffer(0, IID_PPV_ARGS(&backBuffer)))) {
-        return;
+        std::cerr << "[Graphics] IDXGISwapChain::GetBuffer failed\n";
+        return false;
     }
 
-    device->CreateRenderTargetView(backBuffer, nullptr, &mainRenderTargetView);
+    mainRenderTargetView.Reset();
+    const HRESULT hr = device->CreateRenderTargetView(backBuffer, nullptr, mainRenderTargetView.GetAddressOf());
     backBuffer->Release();
-}
-
-void GraphicsContext::cleanupRenderTarget() {
-    if (mainRenderTargetView != nullptr) {
-        mainRenderTargetView->Release();
-        mainRenderTargetView = nullptr;
-    }
-}
-
-void GraphicsContext::cleanupDeviceD3D() {
-    cleanupRenderTarget();
-
-    if (swapChain != nullptr) {
-        swapChain->Release();
-        swapChain = nullptr;
-    }
-    if (deviceContext != nullptr) {
-        deviceContext->Release();
-        deviceContext = nullptr;
-    }
-    if (device != nullptr) {
-        device->Release();
-        device = nullptr;
+    if (FAILED(hr)) {
+        std::cerr << "[Graphics] ID3D11Device::CreateRenderTargetView failed (hr=0x" << std::hex << hr << std::dec << ")\n";
+        return false;
     }
 
-    d3dInitialized = false;
+    return true;
 }
 
 void GraphicsContext::initImGui() {
@@ -262,19 +264,20 @@ void GraphicsContext::initImGui() {
     ImGui::CreateContext();
 
     ImGuiIO& io = ImGui::GetIO();
+    io.IniFilename = nullptr;
 
     io.Fonts->AddFontFromFileTTF(
-        "C:\\Windows\\Fonts\\msyh.ttc",
-        20.0f,
+        kFontPath,
+        kFontSize,
         nullptr,
         io.Fonts->GetGlyphRangesChineseFull()
     );
 
     ImGui::StyleColorsDark();
-    ImGui::GetStyle().ScaleAllSizes(1.5f);
+    ImGui::GetStyle().ScaleAllSizes(kStyleScale);
 
     ImGui_ImplWin32_Init(hwnd);
-    ImGui_ImplDX11_Init(device, deviceContext);
+    ImGui_ImplDX11_Init(device.Get(), deviceContext.Get());
 
     imguiInitialized = true;
 }
@@ -296,7 +299,7 @@ LRESULT CALLBACK GraphicsContext::WindowProc(HWND hwnd, UINT msg, WPARAM wparam,
         return HTTRANSPARENT;
     }
 
-    if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam)) {
+    if (ImGui::GetCurrentContext() != nullptr && ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam)) {
         return TRUE;
     }
 
@@ -320,10 +323,17 @@ LRESULT CALLBACK GraphicsContext::WindowProc(HWND hwnd, UINT msg, WPARAM wparam,
 LRESULT GraphicsContext::handleMessage(HWND hwndHandle, UINT msg, WPARAM wparam, LPARAM lparam) {
     switch (msg) {
     case WM_SIZE:
-        if (d3dInitialized && swapChain != nullptr && wparam != SIZE_MINIMIZED) {
-            cleanupRenderTarget();
-            swapChain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, 0);
-            createRenderTarget();
+        if (d3dInitialized && swapChain && wparam != SIZE_MINIMIZED) {
+            mainRenderTargetView.Reset();
+            const HRESULT hr = swapChain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, 0);
+            if (FAILED(hr)) {
+                std::cerr << "[Graphics] IDXGISwapChain::ResizeBuffers failed (hr=0x" << std::hex << hr << std::dec << ")\n";
+                return 0;
+            }
+
+            if (!createRenderTarget()) {
+                return 0;
+            }
         }
         return 0;
 
