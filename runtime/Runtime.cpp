@@ -36,12 +36,6 @@ static const std::unordered_map<std::string, std::array<ColorRGB, 4>> g_colorPro
         ColorRGB{58, 160, 217},
         ColorRGB{68, 181, 73}
     }},
-    {"default", {
-        ColorRGB{233, 229, 17},
-        ColorRGB{218, 98, 38},
-        ColorRGB{58, 160, 217},
-        ColorRGB{68, 181, 73}
-    }},
     {"deuteranopia", {
         ColorRGB{240, 228, 66},
         ColorRGB{213, 94, 0},
