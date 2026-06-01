@@ -58,7 +58,6 @@ std::array<int, 4> calculateMarkerDistances(const RuntimeConfig& config, Capture
 
 bool DetectionService::update(
     bool miniMapVisible,
-    bool measureVisible,
     const RuntimeConfig& config,
     bool force
 ) {
@@ -72,31 +71,8 @@ bool DetectionService::update(
     return changed;
 }
 
-bool DetectionService::updateCursor(bool measureVisible) {
-    if (!measureVisible) {
-        return false;
-    }
-
-    POINT cursorPos{};
-    if (GetCursorPos(&cursorPos) == FALSE) {
-        return false;
-    }
-
-    const Point nextPoint{cursorPos.x, cursorPos.y};
-    if (nextPoint.x == playerPoint.x && nextPoint.y == playerPoint.y) {
-        return false;
-    }
-
-    playerPoint = nextPoint;
-    return true;
-}
-
 const MiniMapDetectionResult& DetectionService::getMiniMapResult() const {
     return miniMapResult;
-}
-
-const Point& DetectionService::getPlayerPoint() const {
-    return playerPoint;
 }
 
 bool DetectionService::updateMiniMap(

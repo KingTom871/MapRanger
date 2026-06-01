@@ -51,23 +51,13 @@ public:
      */
     bool isMiniMapEnabled() const;
 
-    /**
-     * @brief Checks whether the drag measure overlay is enabled.
-     *
-     * @return True when the drag measure overlay should be visible.
-     */
-    bool isMeasureEnabled() const;
-
 private:
     static constexpr int MiniMapHotkeyId = 1;
-    static constexpr int MeasureHotkeyId = 2;
 
     const RuntimeConfig& config;
     HWND hwnd = nullptr;
-    bool minimapEnabled = false;
-    bool measureEnabled = false;
+    bool minimapEnabled = true;
     bool miniMapHotkeyRegistered = false;
-    bool measureHotkeyRegistered = false;
 
     void unregisterHotkeys();
 };

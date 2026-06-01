@@ -1,12 +1,9 @@
 #include "ui/OverlayManager.h"
 
-bool OverlayManager::updateVisibility(bool miniMapEnabled, bool measureEnabled) {
-    const bool changed =
-        miniMapVisible != miniMapEnabled ||
-        measureVisible != measureEnabled;
+bool OverlayManager::updateVisibility(bool miniMapEnabled) {
+    const bool changed = miniMapVisible != miniMapEnabled;
 
     miniMapVisible = miniMapEnabled;
-    measureVisible = measureEnabled;
 
     if (changed) {
         dirty = true;
@@ -19,12 +16,8 @@ bool OverlayManager::isMiniMapVisible() const {
     return miniMapVisible;
 }
 
-bool OverlayManager::isMeasureVisible() const {
-    return measureVisible;
-}
-
 bool OverlayManager::hasVisibleOverlays() const {
-    return miniMapVisible || measureVisible;
+    return miniMapVisible;
 }
 
 bool OverlayManager::isDirty() const {

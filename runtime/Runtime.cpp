@@ -87,7 +87,6 @@ bool Runtime::initialize() {
     }
     
     config.resolution = detectCurrentResolution();
-    config.measureOverlayHotKey = ini["CONFIG"]["measureOverlayHotKey"];
     config.minimapOverlayHotkey = ini["CONFIG"]["minimapOverlayHotkey"];
     config.colorBlind = toLower(ini["CONFIG"]["colorBlind"]);
     if (config.colorBlind.empty()) {

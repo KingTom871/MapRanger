@@ -20,7 +20,6 @@ struct MiniMapRegion {
  */
 struct RuntimeConfig {
     std::string resolution;
-    std::string measureOverlayHotKey;
     std::string minimapOverlayHotkey;
     std::string colorBlind;
     MiniMapRegion minimapRegion;

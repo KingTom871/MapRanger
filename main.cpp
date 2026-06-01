@@ -5,7 +5,6 @@
 #include "graphics/GraphicsContext.h"
 #include "ui/OverlayManager.h"
 #include "ui/MiniMapPanel.h"
-#include "ui/DragMeasure.h"
 
 #include <iostream>
 
@@ -58,8 +57,7 @@ int main() {
         }
 
         const bool visibilityChanged = overlays.updateVisibility(
-            input.isMiniMapEnabled(),
-            input.isMeasureEnabled()
+            input.isMiniMapEnabled()
         );
         const bool hasVisibleOverlays = overlays.hasVisibleOverlays();
 
@@ -74,18 +72,9 @@ int main() {
 
         if (detection.update(
                 overlays.isMiniMapVisible(),
-                overlays.isMeasureVisible(),
                 config,
                 visibilityChanged
             )) {
-            overlays.markDirty();
-        }
-
-        if (detection.updateCursor(overlays.isMeasureVisible())) {
-            overlays.markDirty();
-        }
-
-        if (UI::updateDragMeasure(overlays.isMeasureVisible())) {
             overlays.markDirty();
         }
 
@@ -95,10 +84,6 @@ int main() {
                 overlays.isMiniMapVisible(),
                 config,
                 detection.getMiniMapResult().distances
-            );
-            UI::renderDragMeasure(
-                overlays.isMeasureVisible(),
-                config
             );
             graphics.endFrame();
             overlays.clearDirty();

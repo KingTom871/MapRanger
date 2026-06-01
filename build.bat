@@ -17,7 +17,6 @@ utils\Input.cpp ^
 graphics\GraphicsContext.cpp ^
 ui\OverlayManager.cpp ^
 ui\MiniMapPanel.cpp ^
-ui\DragMeasure.cpp ^
 includes\ImGui\imgui.cpp ^
 includes\ImGui\imgui_draw.cpp ^
 includes\ImGui\imgui_tables.cpp ^

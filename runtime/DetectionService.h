@@ -24,18 +24,11 @@ public:
      */
     bool update(
         bool miniMapVisible,
-        bool measureVisible,
         const RuntimeConfig& config,
         bool force
     );
 
-    /**
-     * @brief Refreshes cursor-dependent measure data without recapturing the screen.
-     */
-    bool updateCursor(bool measureVisible);
-
     const MiniMapDetectionResult& getMiniMapResult() const;
-    const Point& getPlayerPoint() const;
 
 private:
     using Clock = std::chrono::steady_clock;
@@ -44,6 +37,5 @@ private:
 
     CaptureService miniMapCapture;
     MiniMapDetectionResult miniMapResult;
-    Point playerPoint{};
     Clock::time_point nextMiniMapUpdate{};
 };

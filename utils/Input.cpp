@@ -232,14 +232,7 @@ bool Input::initialize(HWND targetHwnd) {
         config.minimapOverlayHotkey
     );
 
-    measureHotkeyRegistered = registerConfiguredHotkey(
-        hwnd,
-        MeasureHotkeyId,
-        "measureOverlayHotKey",
-        config.measureOverlayHotKey
-    );
-
-    if (!miniMapHotkeyRegistered || !measureHotkeyRegistered) {
+    if (!miniMapHotkeyRegistered) {
         unregisterHotkeys();
         return false;
     }
@@ -258,11 +251,6 @@ void Input::processMessage(const MSG& msg) {
         std::cout << (minimapEnabled ? "[MiniMapOverlay] Visible\n" : "[MiniMapOverlay] Hidden\n");
         break;
 
-    case MeasureHotkeyId:
-        measureEnabled = !measureEnabled;
-        std::cout << (measureEnabled ? "[MeasureOverlay] Visible\n" : "[MeasureOverlay] Hidden\n");
-        break;
-
     default:
         break;
     }
@@ -272,23 +260,14 @@ bool Input::isMiniMapEnabled() const {
     return minimapEnabled;
 }
 
-bool Input::isMeasureEnabled() const {
-    return measureEnabled;
-}
-
 void Input::unregisterHotkeys() {
-    if (hwnd == nullptr && !miniMapHotkeyRegistered && !measureHotkeyRegistered) {
+    if (hwnd == nullptr && !miniMapHotkeyRegistered) {
         return;
     }
 
     if (miniMapHotkeyRegistered) {
         UnregisterHotKey(hwnd, MiniMapHotkeyId);
         miniMapHotkeyRegistered = false;
-    }
-
-    if (measureHotkeyRegistered) {
-        UnregisterHotKey(hwnd, MeasureHotkeyId);
-        measureHotkeyRegistered = false;
     }
 
     hwnd = nullptr;

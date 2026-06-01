@@ -6,10 +6,9 @@
 
 class OverlayManager {
 public:
-    bool updateVisibility(bool miniMapEnabled, bool measureEnabled);
+    bool updateVisibility(bool miniMapEnabled);
 
     bool isMiniMapVisible() const;
-    bool isMeasureVisible() const;
     bool hasVisibleOverlays() const;
 
     bool isDirty() const;
@@ -18,6 +17,5 @@ public:
 
 private:
     bool miniMapVisible = true;
-    bool measureVisible = true;
     bool dirty = true;
 };
